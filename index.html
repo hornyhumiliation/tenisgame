@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pixel Tennis Game</title>
+<style>
+  body, html {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+  canvas {
+    display: block;
+  }
+  #jumpButton {
+    position: absolute;
+    right: 20px;
+    bottom: 20px;
+    width: 80px;
+    height: 80px;
+    font-size: 20px;
+    border-radius: 50%;
+    background: #ffdd00;
+    border: none;
+    z-index: 10;
+  }
+  #scoreDisplay {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    font-size: 24px;
+    color: white;
+    z-index: 10;
+  }
+</style>
+</head>
+<body>
+
+<canvas id="gameCanvas"></canvas>
+<button id="jumpButton">Jump</button>
+<div id="scoreDisplay">Score: 0</div>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+// Создаём изображения
+const bgImg = new Image();
+bgImg.src = 'court.png';
+
+const girlImg1 = new Image();
+girlImg1.src = 'g1.jpg';
+
+const girlImg2 = new Image();
+girlImg2.src = 'g2.jpg';
+
+const boyImg = new Image();
+boyImg.src = 'b1.jpg';
+
+const bbbImg = new Image();
+bbbImg.src = 'bbb1.jpg';
+
+// Игровые объекты
+const girl = { x:100, y:100, width:0, height:0, img:null, bbbTimer:0 };
+const boy = { x:canvas.width/2, y:canvas.height/2, width:0, height:0 };
+let jump = false;
+let jumpTimer = 0;
+let jumpScored = false; // новый флаг для одного очка за прыжок
+let score = 0;
+const scoreDisplay = document.getElementById('scoreDisplay');
+
+// Мобильное управление
+let touchStartX = null, touchStartY = null;
+canvas.addEventListener('touchstart', e => {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+});
+canvas.addEventListener('touchmove', e => {
+    if(touchStartX!==null && touchStartY!==null){
+        const dx = e.touches[0].clientX - touchStartX;
+        const dy = e.touches[0].clientY - touchStartY;
+        boy.x += dx;
+        boy.y += dy;
+        if(boy.x<0) boy.x=0;
+        if(boy.y<0) boy.y=0;
+        if(boy.x>canvas.width-boy.width) boy.x=canvas.width-boy.width;
+        if(boy.y>canvas.height-boy.height) boy.y=canvas.height-boy.height;
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+    }
+});
+
+// Кнопка подпрыгивания
+document.getElementById('jumpButton').addEventListener('click', ()=>{
+    jump = true;
+    jumpTimer = 10;
+});
+
+// Проверка столкновения
+function checkCollision(){
+    const dx = (boy.x + boy.width/2) - (girl.x + girl.width/2);
+    const dy = (boy.y + boy.height/2) - (girl.y + girl.height/2);
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    
+    // Начисляем очко только один раз за прыжок
+    if(dist < 50 && jumpTimer > 0 && !jumpScored){
+        score++;
+        scoreDisplay.innerText = `Score: ${score}`;
+        girl.img = girlImg2;
+        girl.bbbTimer = 10; // показываем bbb1.jpg 1 сек (~10 кадров)
+        setTimeout(()=>{girl.img=girlImg1}, 1000);
+        jumpScored = true; // очко уже засчитано
+    }
+
+    // Сбрасываем флаг после окончания прыжка
+    if(jumpTimer === 0){
+        jumpScored = false;
+    }
+}
+
+// Случайное движение девочки
+function moveGirlRandomly(){
+    setInterval(()=>{
+        const dx = (Math.random()-0.5)*10;
+        const dy = (Math.random()-0.5)*10;
+        girl.x += dx;
+        girl.y += dy;
+        if(girl.x<0) girl.x=0;
+        if(girl.y<0) girl.y=0;
+        if(girl.x>canvas.width-girl.width) girl.x=canvas.width-girl.width;
+        if(girl.y>canvas.height-girl.height) girl.y=canvas.height-girl.height;
+    },200);
+}
+
+// Основные функции
+function update(){
+    if(jumpTimer>0) jumpTimer--;
+    if(girl.bbbTimer>0) girl.bbbTimer--;
+    checkCollision();
+}
+
+function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.drawImage(bgImg,0,0,canvas.width,canvas.height);
+    if(girl.img) ctx.drawImage(girl.img,girl.x,girl.y,girl.width,girl.height);
+    if(girl.bbbTimer>0) ctx.drawImage(bbbImg,girl.x+girl.width/2-19,girl.y-39,39,39);
+    if(boyImg.complete) ctx.drawImage(boyImg,boy.x,boy.y,boy.width,boy.height);
+}
+
+function gameLoop(){
+    update();
+    draw();
+    requestAnimationFrame(gameLoop);
+}
+
+// Ждём загрузки всех изображений
+let loadedCount = 0;
+const images = [bgImg,girlImg1,girlImg2,boyImg,bbbImg];
+images.forEach(img=>{
+    img.onload = ()=>{
+        loadedCount++;
+        if(loadedCount === images.length){
+            // Используем оригинальные размеры
+            girl.width = girlImg1.width;
+            girl.height = girlImg1.height;
+            boy.width = boyImg.width;
+            boy.height = boyImg.height;
+            girl.img = girlImg1;
+            // Старт игры
+            moveGirlRandomly();
+            gameLoop();
+        }
+    }
+});
+</script>
+</body>
+</html>
