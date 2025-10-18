@@ -129,8 +129,8 @@ function checkCollision(){
 // Случайное движение девочки
 function moveGirlRandomly(){
     setInterval(()=>{
-        const dx = (Math.random()-0.5)*10;
-        const dy = (Math.random()-0.5)*10;
+        const dx = (Math.random()-0.5)*20;
+        const dy = (Math.random()-0.5)*20;
         girl.x += dx;
         girl.y += dy;
         if(girl.x<0) girl.x=0;
