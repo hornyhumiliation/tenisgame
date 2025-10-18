@@ -118,6 +118,22 @@ function checkCollision(){
         girl.bbbTimer = 10; // показываем bbb1.jpg 1 сек (~10 кадров)
         setTimeout(()=>{girl.img=girlImg1}, 1000);
         jumpScored = true; // очко уже засчитано
+		
+		// Отпрыгивание девочки при получении очка
+const jumpDistance = 30;
+let angle = Math.random() * 2 * Math.PI; // случайное направление
+let newX = girl.x + Math.cos(angle) * jumpDistance;
+let newY = girl.y + Math.sin(angle) * jumpDistance;
+
+// Проверка, чтобы девочка не вышла за экран
+if (newX < 0) newX = 0;
+if (newX + girl.width > canvas.width) newX = canvas.width - girl.width;
+if (newY < 0) newY = 0;
+if (newY + girl.height > canvas.height) newY = canvas.height - girl.height;
+
+girl.x = newX;
+girl.y = newY;
+
     }
 
     // Сбрасываем флаг после окончания прыжка
