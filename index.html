@@ -45,6 +45,15 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
+// Отключаем стандартное поведение касаний (скролл, перетаскивание и т.п.)
+document.body.style.overflow = 'hidden';
+document.body.style.touchAction = 'none';
+canvas.style.touchAction = 'none';
+
+// Также отключаем выделение и перетаскивание элементов
+canvas.onselectstart = () => false;
+canvas.ondragstart = () => false;
+
 function resizeCanvas() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -149,8 +158,8 @@ function moveGirlRandomly() {
 
     setInterval(() => {
         // базовые случайные движения
-        let dx = directionX * (Math.random() * 30 + 1);
-        let dy = directionY * (Math.random() * 10 + 2); // увеличенная амплитуда вертикальных движений
+        let dx = directionX * (Math.random() * 20 + 1);
+        let dy = directionY * (Math.random() * 8 + 2); // увеличенная амплитуда вертикальных движений
 
         // редкий рывок в противоположную сторону (по X)
         if (Math.random() < 0.2) {
