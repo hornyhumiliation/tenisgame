@@ -127,18 +127,53 @@ function checkCollision(){
 }
 
 // Случайное движение девочки
-function moveGirlRandomly(){
-    setInterval(()=>{
-        const dx = (Math.random()-0.5)*20;
-        const dy = (Math.random()-0.5)*20;
+function moveGirlRandomly() {
+    let directionX = 1; // 1 — вправо, -1 — влево
+    let directionY = 1; // 1 — вниз, -1 — вверх
+
+    setInterval(() => {
+        // базовые случайные движения
+        let dx = directionX * (Math.random() * 30 + 1);
+        let dy = directionY * (Math.random() * 10 + 2); // увеличенная амплитуда вертикальных движений
+
+        // редкий рывок в противоположную сторону (по X)
+        if (Math.random() < 0.2) {
+            dx = -directionX * (Math.random() * 15 + 10);
+            dy = directionY * (Math.random() - 0.5) * 10;
+        }
+
         girl.x += dx;
         girl.y += dy;
-        if(girl.x<0) girl.x=0;
-        if(girl.y<0) girl.y=0;
-        if(girl.x>canvas.width-girl.width) girl.x=canvas.width-girl.width;
-        if(girl.y>canvas.height-girl.height) girl.y=canvas.height-girl.height;
-    },200);
+
+        // Проверка правого края
+        if (girl.x + girl.width >= canvas.width) {
+            girl.x = canvas.width - girl.width;
+            directionX = -1; // меняем направление
+        }
+
+        // Проверка левого края
+        if (girl.x <= 0) {
+            girl.x = 0;
+            directionX = 1; // меняем направление
+        }
+
+        // Если остаётся <100 пикселей до низа — начинаем движение вверх
+        if (girl.y + girl.height >= canvas.height - 200) {
+            directionY = -1; // вверх
+        }
+
+        // Если до верха <50 пикселей — двигаемся вниз
+        if (girl.y <= 100) {
+            directionY = 1; // вниз
+        }
+
+        // ограничение чтобы не уходила за экран
+        if (girl.y < 0) girl.y = 0;
+        if (girl.y + girl.height > canvas.height) girl.y = canvas.height - girl.height;
+    }, 100);
 }
+
+
 
 // Основные функции
 function update(){
